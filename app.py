@@ -2,37 +2,25 @@ import os
 import random
 from flask import Flask, jsonify, request, render_template_string
 
-# 1. FLASK APP INITIALIZATION
 app = Flask(__name__)
 
 # ==========================================
-# 2. MARKET LISTS & TIMEFRAMES
+# 1. MARKET LISTS
 # ==========================================
 REAL_MARKETS = [
-    "EUR/JPY", "EUR/GBP", "GBP/USD", "USD/JPY", "AUD/CAD", 
-    "EUR/USD", "CAD/JPY", "AUD/CHF", "GBP/AUD", "AUD/JPY", 
-    "AUD/USD", "EUR/CHF", "CHF/JPY", "GBP/CHF", "GBP/JPY", 
-    "EUR/AUD", "EUR/CAD", "USD/CAD", "GBP/CAD", "USD/CHF"
+    "FX:EURUSD", "FX:GBPUSD", "FX:USDJPY", "FX:EURJPY", "FX:EURGBP",
+    "FX:AUDCAD", "FX:CADJPY", "FX:AUDCHF", "FX:GBPAUD", "FX:AUDJPY"
 ]
 
 OTC_MARKETS = [
     "CAD/CHF (OTC)", "USD/INR (OTC)", "USD/NGN (OTC)", "NZD/CHF (OTC)", 
-    "USD/IDR (OTC)", "USD/BRL (OTC)", "AUD/NZD (OTC)", "USD/ARS (OTC)", 
-    "NZD/JPY (OTC)", "USD/PKR (OTC)", "NZD/CAD (OTC)", "USD/BDT (OTC)", 
-    "USD/COP (OTC)", "USD/DZD (OTC)", "USD/EGP (OTC)", "USD/MXN (OTC)", 
-    "USD/PHP (OTC)", "EUR/NZD (OTC)", "GBP/NZD (OTC)", "USD/ZAR (OTC)", 
-    "NZD/USD (OTC)", "Axie Infinity (OTC)", "Bitcoin Cash (OTC)", 
-    "Bitcoin (OTC)", "Dash (OTC)", "Solana (OTC)", "Toncoin (OTC)", 
-    "Trump (OTC)", "Zcash (OTC)", "Ripple (OTC)", "Chainlink (OTC)", 
-    "Cosmos (OTC)", "Polkadot (OTC)", "Ethereum Classic (OTC)", 
-    "Avalanche (OTC)", "Litecoin (OTC)", "Ethereum (OTC)", "Binance Coin (OTC)",
-    "UKBrent (OTC)", "Gold (OTC)", "Silver (OTC)", "USCrude (OTC)"
+    "USD/IDR (OTC)", "USD/BRL (OTC)", "AUD/NZD (OTC)", "USD/BDT (OTC)"
 ]
 
-TIMEFRAMES = ["5S", "10S", "15S", "20S", "25S", "30S", "1M", "2M", "3M", "4M", "5M"]
+TIMEFRAMES = ["5S", "10S", "15S", "30S", "1M", "5M"]
 
 # ==========================================
-# 3. KNOWLEDGE BASE (250+ RULES)
+# 2. KNOWLEDGE BASE
 # ==========================================
 KNOWLEDGE_BASE = [
     {"rule": "EMA/SMA Dynamic Cross", "logic": "Price above EMA(200) confirms institutional uptrend bias."},
@@ -42,14 +30,8 @@ KNOWLEDGE_BASE = [
     {"rule": "Fair Value Gap (FVG)", "logic": "Price retesting 3-candle imbalance zone for order rebalance."}
 ]
 
-for i in range(6, 251):
-    KNOWLEDGE_BASE.append({
-        "rule": f"Institutional Logic Node #{i}",
-        "logic": f"Multi-timeframe liquidity sweep and volume profile confluence rule {i}."
-    })
-
 # ==========================================
-# 4. FRONTEND HTML TEMPLATE
+# 3. HTML / FRONTEND WITH DUAL CHART ENGINE
 # ==========================================
 HTML_PAGE = """
 <!DOCTYPE html>
@@ -57,7 +39,9 @@ HTML_PAGE = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FINORIX PRO BOT</title>
+    <title>FINORIX PRO BOT - DUAL LIVE CHART</title>
+    <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
     <style>
         body {
             background-color: #050508;
@@ -73,7 +57,7 @@ HTML_PAGE = """
         }
         .bot-card {
             width: 100%;
-            max-width: 400px;
+            max-width: 420px;
             background: #0d0d14;
             border-radius: 16px;
             padding: 20px;
@@ -85,28 +69,11 @@ HTML_PAGE = """
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
-        .title {
-            font-size: 18px;
-            font-weight: bold;
-            color: #00ff66;
-        }
-        .qx-link {
-            background: #ff0055;
-            color: #fff;
-            padding: 6px 12px;
-            border-radius: 6px;
-            text-decoration: none;
-            font-size: 12px;
-            font-weight: bold;
-        }
-        label {
-            font-size: 12px;
-            color: #aaa;
-            margin-top: 10px;
-            display: block;
-        }
+        .title { font-size: 18px; font-weight: bold; color: #00ff66; }
+        .qx-link { background: #ff0055; color: #fff; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: bold; }
+        label { font-size: 12px; color: #aaa; margin-top: 10px; display: block; }
         select, button {
             width: 100%;
             padding: 12px;
@@ -118,56 +85,21 @@ HTML_PAGE = """
             outline: none;
             box-sizing: border-box;
         }
-        .scan-btn {
-            background: #00e5ff;
-            color: #000;
-            font-weight: bold;
-            font-size: 16px;
-            margin-top: 20px;
-            cursor: pointer;
-            border: none;
-        }
-        .stats {
-            display: flex;
-            justify-content: space-between;
-            gap: 8px;
-            margin-top: 20px;
-            text-align: center;
-        }
-        .stat-box {
-            flex: 1;
-            background: #12121f;
-            border: 1px solid #00e5ff;
+        #chartBox {
+            width: 100%;
+            height: 240px;
+            margin-top: 15px;
             border-radius: 8px;
-            padding: 10px 5px;
+            overflow: hidden;
+            border: 1px solid #222;
+            background: #000;
         }
-        .stat-num {
-            font-size: 15px;
-            font-weight: bold;
-            color: #00e5ff;
-            margin-top: 5px;
-        }
-        .signal-area {
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: 10px;
-            border: 2px solid #00ff66;
-            text-align: center;
-            display: none;
-        }
-        .signal-title {
-            font-size: 22px;
-            font-weight: bold;
-        }
-        .logic-area {
-            margin-top: 10px;
-            padding: 10px;
-            background: #1a1a26;
-            border-radius: 8px;
-            font-size: 11px;
-            display: none;
-            color: #ffea00;
-        }
+        .scan-btn { background: #00e5ff; color: #000; font-weight: bold; font-size: 16px; margin-top: 15px; cursor: pointer; border: none; }
+        .stats { display: flex; justify-content: space-between; gap: 8px; margin-top: 15px; text-align: center; }
+        .stat-box { flex: 1; background: #12121f; border: 1px solid #00e5ff; border-radius: 8px; padding: 8px 4px; }
+        .stat-num { font-size: 14px; font-weight: bold; color: #00e5ff; margin-top: 4px; }
+        .signal-area { margin-top: 15px; padding: 12px; border-radius: 10px; border: 2px solid #00ff66; text-align: center; display: none; }
+        .signal-title { font-size: 20px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -182,13 +114,17 @@ HTML_PAGE = """
     </div>
 
     <label>SELECT MARKET</label>
-    <select id="market">
-        {% for m in otc %}
-        <option value="{{ m }}">{{ m }}</option>
-        {% endfor %}
-        {% for m in real %}
-        <option value="{{ m }}">{{ m }}</option>
-        {% endfor %}
+    <select id="market" onchange="switchChart()">
+        <optgroup label="OTC MARKETS">
+            {% for m in otc %}
+            <option value="{{ m }}">{{ m }}</option>
+            {% endfor %}
+        </optgroup>
+        <optgroup label="REAL MARKETS">
+            {% for m in real %}
+            <option value="{{ m }}">{{ m }}</option>
+            {% endfor %}
+        </optgroup>
     </select>
 
     <label>TIMEFRAME</label>
@@ -197,6 +133,9 @@ HTML_PAGE = """
         <option value="{{ tf }}">{{ tf }}</option>
         {% endfor %}
     </select>
+
+    <!-- CONTAINER FOR BOTH CHARTS -->
+    <div id="chartBox"></div>
 
     <button class="scan-btn" onclick="getSignal()">🚀 MANUAL AI SCAN</button>
 
@@ -219,14 +158,79 @@ HTML_PAGE = """
         <div class="signal-title" id="sigText">--</div>
         <div style="font-size: 12px; margin-top: 5px;" id="sigSub">--</div>
     </div>
-
-    <div class="logic-area" id="logicBox">
-        <b>Rule:</b> <span id="rName">--</span><br>
-        <b>Logic:</b> <span id="rLogic">--</span>
-    </div>
 </div>
 
 <script>
+    let simChart, candlestickSeries, simInterval;
+
+    function switchChart() {
+        const market = document.getElementById('market').value;
+        const box = document.getElementById('chartBox');
+        box.innerHTML = '';
+        if (simInterval) clearInterval(simInterval);
+
+        if (market.includes('FX:')) {
+            // Load Real TradingView Live Chart
+            new TradingView.widget({
+                "autosize": true,
+                "symbol": market,
+                "interval": "1",
+                "timezone": "Asia/Dhaka",
+                "theme": "dark",
+                "style": "1",
+                "locale": "en",
+                "toolbar_bg": "#f1f3f6",
+                "enable_publishing": false,
+                "hide_top_toolbar": true,
+                "save_image": false,
+                "container_id": "chartBox"
+            });
+        } else {
+            // Load OTC Custom Interactive Live Chart
+            simChart = LightweightCharts.createChart(box, {
+                layout: { backgroundColor: '#0a0a10', textColor: '#d1d4dc' },
+                grid: { vertLines: { color: '#1a1a26' }, horzLines: { color: '#1a1a26' } },
+                timeScale: { timeVisible: true, seconds: true }
+            });
+
+            candlestickSeries = simChart.addCandlestickSeries({
+                upColor: '#00ff66', downColor: '#ff0055',
+                borderDownColor: '#ff0055', borderUpColor: '#00ff66',
+                wickDownColor: '#ff0055', wickUpColor: '#00ff66'
+            });
+
+            let price = 1.1200;
+            let time = Math.floor(Date.now() / 1000) - 300;
+            let data = [];
+
+            for (let i = 0; i < 30; i++) {
+                let open = price;
+                let close = open + (Math.random() - 0.49) * 0.0004;
+                data.push({
+                    time: time, open: open,
+                    high: Math.max(open, close) + 0.0001,
+                    low: Math.min(open, close) - 0.0001,
+                    close: close
+                });
+                price = close;
+                time += 10;
+            }
+            candlestickSeries.setData(data);
+
+            simInterval = setInterval(() => {
+                time += 1;
+                let close = price + (Math.random() - 0.49) * 0.0002;
+                candlestickSeries.update({
+                    time: time, open: price,
+                    high: Math.max(price, close) + 0.0001,
+                    low: Math.min(price, close) - 0.0001,
+                    close: close
+                });
+                price = close;
+            }, 1000);
+        }
+    }
+
     function speakText(text) {
         if ('speechSynthesis' in window) {
             var msg = new SpeechSynthesisUtterance(text);
@@ -271,12 +275,10 @@ HTML_PAGE = """
             }
 
             box.style.display = 'block';
-
-            document.getElementById('rName').innerText = data.rule_name;
-            document.getElementById('rLogic').innerText = data.rule_logic;
-            document.getElementById('logicBox').style.display = 'block';
         });
     }
+
+    window.onload = switchChart;
 </script>
 
 </body>
@@ -284,7 +286,7 @@ HTML_PAGE = """
 """
 
 # ==========================================
-# 5. FLASK ROUTES
+# 4. FLASK ROUTES
 # ==========================================
 @app.route('/')
 def index():
@@ -303,7 +305,7 @@ def scan():
     })
 
 # ==========================================
-# 6. SERVER RUNNER (RENDER PORT BINDING)
+# 5. SERVER RUNNER
 # ==========================================
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
