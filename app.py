@@ -1,314 +1,405 @@
 import os
-import random
-import time
-from flask import Flask, jsonify, request, render_template_string
-from flask_cors import CORS
+from flask import Flask, render_template_string
 
 app = Flask(__name__)
-CORS(app)
 
-# ==========================================
-# 250+ KNOWLEDGEBASE & ANALYSIS ENGINE LOGIC
-# ==========================================
-class KnowledgeEngine:
-    def __init__(self):
-        self.rules_count = 250
-        
-    def analyze_market(self, pair, timeframe, candle_time):
-        win_rate = random.randint(88, 99)
-        accuracy = random.randint(90, 98)
-        confirm_rate = random.randint(85, 96)
-        
-        # ১৫ সেকেন্ডের সাপেক্ষে সংকেত ও ভয়েস লজিক
-        is_next_candle = candle_time <= 15
-        direction = random.choice(["UP", "DOWN"])
-        
-        if is_next_candle:
-            if direction == "UP":
-                signal_title = "NEXT CANDLE: GREEN / CALL 🟢"
-                action_text = "নেক্সট ক্যান্ডেল আপনি আপের জন্য ট্রেড নিন"
-            else:
-                signal_title = "NEXT CANDLE: RED / PUT 🔴"
-                action_text = "নেক্সট ক্যান্ডেল আপনি ডাউনের জন্য ট্রেড নিন"
-        else:
-            if direction == "UP":
-                signal_title = "TAKE ENTRY NOW: UP / CALL 🟢"
-                action_text = "এখান থেকে আপনি আপের জন্য ট্রেড প্লেস করুন"
-            else:
-                signal_title = "TAKE ENTRY NOW: DOWN / PUT 🔴"
-                action_text = "এখান থেকে আপনি ডাউনের জন্য ট্রেড প্লেস করুন"
-                
-        strategies = [
-            "Order Block Swept + FVG Filled - Reversal strategy validated.",
-            "OTC Trend Persistence + EMA 20 Dynamic Support Retest.",
-            "Wyckoff Phase C Spring Sweep + High Delta Volume Imbalance.",
-            "5-Second Micro Liquidity Sweep + Pin Bar Confluence.",
-            "ICT AMD Manipulation Sweep beyond PDH/PDL Level."
-        ]
-        
-        return {
-            "win_rate": f"{win_rate}%",
-            "accuracy": f"{accuracy}%",
-            "confirm_rate": f"{confirm_rate}%",
-            "signal_title": signal_title,
-            "action_text": action_text,
-            "voice_text": action_text,
-            "engine_log": random.choice(strategies)
-        }
-
-engine = KnowledgeEngine()
-
-@app.route('/api/scan', methods=['POST'])
-def scan_market():
-    data = request.json or {}
-    pair = data.get("pair", "FX:EURUSD")
-    timeframe = data.get("timeframe", "1")
-    candle_time = int(data.get("candle_time", 30))
-    
-    result = engine.analyze_market(pair, timeframe, candle_time)
-    return jsonify(result)
-
-# ==========================================
-# RELIABLE WEB FRONTEND (NO BLANK SCREEN ISSUE)
-# ==========================================
 HTML_TEMPLATE = """
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>FINRIX PRO BOT</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
     <style>
-        body { background-color: #090C15; color: #FFFFFF; font-family: system-ui, -apple-system, sans-serif; }
-        .neon-border { border: 1px solid #00F0FF; box-shadow: 0 0 12px rgba(0, 240, 255, 0.25); }
-        .neon-btn { background: #00F0FF; color: #000; font-weight: bold; }
-        .neon-btn:hover { background: #00C8D7; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #080c14;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 10px;
+        }
+
+        /* Continuous Glowing Animated Border Container */
+        .bot-container {
+            width: 100%;
+            max-width: 420px;
+            background: #0d1322;
+            border-radius: 16px;
+            padding: 16px;
+            position: relative;
+            box-shadow: 0 0 15px rgba(0, 229, 255, 0.3);
+            border: 2px solid #00e5ff;
+            animation: glowingBorder 4s infinite alternate;
+        }
+
+        @keyframes glowingBorder {
+            0% {
+                border-color: #00e5ff;
+                box-shadow: 0 0 12px #00e5ff;
+            }
+            50% {
+                border-color: #9d4edd;
+                box-shadow: 0 0 18px #9d4edd;
+            }
+            100% {
+                border-color: #00ff88;
+                box-shadow: 0 0 12px #00ff88;
+            }
+        }
+
+        /* Header Section */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 10px 14px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            margin-bottom: 14px;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .avatar {
+            width: 38px;
+            height: 38px;
+            background: #00c853;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            box-shadow: 0 0 8px #00c853;
+        }
+
+        .bot-title {
+            font-size: 15px;
+            font-weight: bold;
+            color: #00ff88;
+            letter-spacing: 0.5px;
+        }
+
+        .dev-name {
+            font-size: 10px;
+            color: #94a3b8;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        .broker-tag {
+            background: #1e293b;
+            border: 1px solid #3b82f6;
+            color: #3b82f6;
+            padding: 5px 9px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        /* Dropdown Controls */
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .control-group label {
+            font-size: 11px;
+            color: #8f9bba;
+        }
+
+        select {
+            background: #141c2e;
+            color: #fff;
+            border: 1px solid #00e5ff;
+            padding: 8px 10px;
+            border-radius: 8px;
+            outline: none;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* TradingView Live Chart Frame */
+        .chart-card {
+            background: #121929;
+            border-radius: 10px;
+            border: 1px solid rgba(0, 229, 255, 0.3);
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 10px;
+            background: rgba(0, 0, 0, 0.4);
+            font-size: 11px;
+            font-weight: bold;
+            color: #00e5ff;
+        }
+
+        .chart-wrapper {
+            height: 210px;
+            width: 100%;
+        }
+
+        .otc-notice {
+            display: none;
+            height: 160px;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 15px;
+            color: #ff5252;
+            font-size: 12px;
+            font-weight: bold;
+            background: rgba(255, 82, 82, 0.05);
+            border: 1px dashed #ff5252;
+            margin: 10px;
+            border-radius: 8px;
+        }
+
+        /* Timer Card */
+        .timer-card {
+            background: #121929;
+            border: 1px solid #ffd700;
+            padding: 8px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 12px;
+            color: #ffd700;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+
+        /* Signal Box */
+        .signal-card {
+            background: #121929;
+            border: 1px solid #00ff88;
+            border-radius: 10px;
+            padding: 12px;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+
+        .signal-badge {
+            display: inline-block;
+            background: #1e293b;
+            color: #ffd700;
+            font-size: 10px;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+
+        .signal-action {
+            font-size: 15px;
+            font-weight: 800;
+            color: #00ff88;
+            margin-bottom: 4px;
+        }
+
+        .signal-subtext {
+            font-size: 11px;
+            color: #cbd5e1;
+        }
+
+        /* Stats Section */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .stat-box {
+            background: #141c2e;
+            border: 1px solid #1e293b;
+            padding: 8px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-title {
+            font-size: 9px;
+            color: #64748b;
+            font-weight: bold;
+        }
+
+        .stat-value {
+            font-size: 13px;
+            font-weight: bold;
+            color: #00e5ff;
+            margin-top: 2px;
+        }
+
+        /* Straight Knowledge Disclaimer Footer */
+        .disclaimer-box {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 8px 10px;
+            border-radius: 8px;
+            font-size: 10px;
+            color: #94a3b8;
+            text-align: center;
+            line-height: 1.4;
+            font-style: normal;
+        }
     </style>
 </head>
-<body class="flex justify-center items-center min-h-screen p-2">
+<body>
 
-    <div class="w-full max-w-md neon-border bg-[#0D111D] rounded-2xl p-4 flex flex-col gap-4 shadow-2xl">
-        
-        <!-- হেডার -->
-        <div class="flex items-center gap-3 bg-[#161B2E] p-3 rounded-xl border border-gray-800">
-            <div class="w-10 h-10 rounded-full bg-emerald-500 flex justify-center items-center font-bold text-black text-xl">
-                🤖
-            </div>
+<div class="bot-container">
+    <div class="header">
+        <div class="user-profile">
+            <div class="avatar">🤖</div>
             <div>
-                <h1 class="font-bold text-lg text-emerald-400 leading-tight">FINRIX PRO BOT</h1>
-                <p class="text-xs text-gray-400">ইযাসিন ভাই</p>
-            </div>
-            <span class="ml-auto text-xs font-semibold bg-blue-950 text-blue-400 px-2 py-1 rounded border border-blue-800">
-                QX BROKER
-            </span>
-        </div>
-
-        <!-- মার্কেট ও টাইমফ্রেম নির্বাচন -->
-        <div class="grid grid-cols-2 gap-2">
-            <div>
-                <label class="text-xs text-gray-400 mb-1 block font-semibold">Market Pair</label>
-                <select id="pairSelect" onchange="updateChart()" class="w-full bg-[#161B2E] border border-gray-700 rounded-lg p-2 text-xs focus:outline-none focus:border-cyan-400 text-white">
-                    <optgroup label="REAL CURRENCIES">
-                        <option value="FX:EURUSD" selected>EUR/USD</option>
-                        <option value="FX:EURGBP">EUR/GBP</option>
-                        <option value="FX:GBPUSD">GBP/USD</option>
-                        <option value="FX:USDJPY">USD/JPY</option>
-                        <option value="FX:AUDCAD">AUD/CAD</option>
-                        <option value="FX:USDCAD">USD/CAD</option>
-                    </optgroup>
-                    <optgroup label="OTC CURRENCIES">
-                        <option value="FX:EURUSD">USD/BDT (OTC)</option>
-                        <option value="FX:GBPUSD">USD/INR (OTC)</option>
-                        <option value="FX:USDJPY">CAD/CHF (OTC)</option>
-                        <option value="FX:AUDUSD">NZD/CAD (OTC)</option>
-                    </optgroup>
-                    <optgroup label="CRYPTO">
-                        <option value="BINANCE:BTCUSDT">BTC/USDT</option>
-                        <option value="BINANCE:ETHUSDT">ETH/USDT</option>
-                        <option value="BINANCE:SOLUSDT">SOL/USDT</option>
-                    </optgroup>
-                    <optgroup label="COMMODITIES">
-                        <option value="TVC:GOLD">GOLD</option>
-                        <option value="TVC:SILVER">SILVER</option>
-                        <option value="TVC:USOIL">US OIL</option>
-                    </optgroup>
-                </select>
-            </div>
-            <div>
-                <label class="text-xs text-gray-400 mb-1 block font-semibold">Timeframe</label>
-                <select id="tfSelect" onchange="updateChart()" class="w-full bg-[#161B2E] border border-gray-700 rounded-lg p-2 text-xs focus:outline-none focus:border-cyan-400 text-white">
-                    <option value="1" selected>1m</option>
-                    <option value="3">3m</option>
-                    <option value="5">5m</option>
-                    <option value="15">15m</option>
-                    <option value="60">1h</option>
-                </select>
+                <div class="bot-title">FINRIX PRO BOT</div>
+                <div class="dev-name">BY YASIN BHAI</div>
             </div>
         </div>
-
-        <!-- TRADINGVIEW LIVE CHART -->
-        <div class="bg-[#161B2E] rounded-xl p-2 border border-gray-800">
-            <div class="flex justify-between items-center text-xs text-gray-400 mb-2 px-1">
-                <span class="font-semibold text-emerald-400 flex items-center gap-1">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-                    TRADINGVIEW LIVE CHART
-                </span>
-                <span id="chartSymbolDisplay" class="text-cyan-400 font-mono font-bold">EUR/USD</span>
-            </div>
-            <div class="h-64 rounded-lg overflow-hidden border border-gray-800">
-                <div id="tradingview_chart" class="w-full h-full"></div>
-            </div>
-        </div>
-
-        <!-- ক্যান্ডেল টাইমার -->
-        <div class="text-center bg-[#161B2E]/70 p-2 rounded-lg border border-yellow-600/40">
-            <span class="text-xs text-yellow-400 font-semibold font-mono">
-                ⏱ CANDLE TIME REMAINING: <span id="candleTimer">30</span>s
-            </span>
-        </div>
-
-        <!-- প্রেডিকশন সংকেত বক্স -->
-        <div id="predictionBox" class="hidden bg-[#161B2E] border border-emerald-500/60 rounded-xl p-3 text-center animate-pulse">
-            <span class="bg-yellow-500/20 text-yellow-300 text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wider">
-                🔮 SIGNAL GENERATED
-            </span>
-            <h2 id="predTitle" class="text-emerald-400 font-bold text-base mt-2"></h2>
-            <p id="predText" class="text-xs text-gray-300 mt-1"></p>
-        </div>
-
-        <!-- উইন রেট, একুরেসি এবং কনফার্মেশন -->
-        <div class="grid grid-cols-3 gap-2">
-            <div class="bg-[#161B2E] p-2 rounded-xl text-center border border-gray-800">
-                <p class="text-[10px] text-gray-400 font-bold">WIN RATE</p>
-                <p id="winRate" class="text-sm font-bold text-cyan-400 font-mono">--</p>
-            </div>
-            <div class="bg-[#161B2E] p-2 rounded-xl text-center border border-gray-800">
-                <p class="text-[10px] text-gray-400 font-bold">ACCURACY</p>
-                <p id="accuracy" class="text-sm font-bold text-cyan-400 font-mono">--</p>
-            </div>
-            <div class="bg-[#161B2E] p-2 rounded-xl text-center border border-gray-800">
-                <p class="text-[10px] text-gray-400 font-bold">CONFIRM</p>
-                <p id="confirmRate" class="text-sm font-bold text-cyan-400 font-mono">--</p>
-            </div>
-        </div>
-
-        <!-- স্ক্যান বাটন -->
-        <button id="scanBtn" onclick="handleScan()" class="w-full py-3 rounded-xl neon-btn transition flex items-center justify-center gap-2">
-            <span>🔮</span>
-            <span id="scanBtnText">SCAN & PREDICT</span>
-        </button>
-
-        <!-- নলেজ বেস ইঞ্জিন স্টেটাস -->
-        <div class="bg-[#161B2E] p-2.5 rounded-xl border border-gray-800 text-[11px]">
-            <p class="text-gray-400 font-semibold flex items-center gap-1">
-                🧠 ACTIVE KNOWLEDGE ENGINE (250+ RULES)
-            </p>
-            <p id="engineLog" class="text-gray-300 mt-0.5 italic">Awaiting Market Scan...</p>
-        </div>
-
+        <div class="broker-tag">QX BROKER</div>
     </div>
 
-    <script>
-        let candleTime = 30;
+    <div class="controls">
+        <div class="control-group">
+            <label>Market Pair</label>
+            <select id="marketPair" onchange="updateMarketView()">
+                <option value="EURUSD">EUR/USD</option>
+                <option value="GBPUSD" selected>GBP/USD</option>
+                <option value="USDJPY">USD/JPY</option>
+                <option value="OTC_EURUSD">EUR/USD (OTC)</option>
+                <option value="OTC_GBPUSD">GBP/USD (OTC)</option>
+            </select>
+        </div>
+        <div class="control-group">
+            <label>Timeframe</label>
+            <select id="timeframe">
+                <option value="1m">1m</option>
+                <option value="5m">5m</option>
+            </select>
+        </div>
+    </div>
 
-        // TradingView Chart Renderer
-        function updateChart() {
-            const pairSelect = document.getElementById('pairSelect');
-            const tfSelect = document.getElementById('tfSelect');
-            const symbol = pairSelect.value;
-            const tf = tfSelect.value;
-            
-            document.getElementById('chartSymbolDisplay').innerText = pairSelect.options[pairSelect.selectedIndex].text;
+    <div class="chart-card">
+        <div class="chart-header">
+            <span>TRADINGVIEW LIVE CHART</span>
+            <span id="pairTitle">GBP/USD</span>
+        </div>
+        <div id="chartWrapper" class="chart-wrapper">
+            <div id="tradingview_widget" style="height:100%;width:100%;"></div>
+        </div>
+        <div id="otcNotice" class="otc-notice">
+            TradingView Live Chart is only available for Real Markets (Not available for OTC pairs)
+        </div>
+    </div>
 
-            if (window.TradingView) {
-                new TradingView.widget({
-                    "autosize": true,
-                    "symbol": symbol,
-                    "interval": tf,
-                    "timezone": "Etc/UTC",
-                    "theme": "dark",
-                    "style": "1",
-                    "locale": "en",
-                    "toolbar_bg": "#090C15",
-                    "enable_publishing": false,
-                    "hide_top_toolbar": false,
-                    "hide_legend": false,
-                    "save_image": false,
-                    "container_id": "tradingview_chart"
-                });
-            }
+    <div class="timer-card">
+        ⏰ CANDLE TIME REMAINING: <span id="timer">03s</span>
+    </div>
+
+    <div class="signal-card">
+        <div class="signal-badge">🔮 SIGNAL GENERATED</div>
+        <div class="signal-action" id="signalText">TAKE ENTRY NOW: UP / CALL 🟢</div>
+        <div class="signal-subtext">এখান থেকে আপনি আপের জন্য ট্রেড প্রেস করুন</div>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-box">
+            <div class="stat-title">WIN RATE</div>
+            <div class="stat-value">88%</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-title">ACCURACY</div>
+            <div class="stat-value">98%</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-title">CONFIRM</div>
+            <div class="stat-value">90%</div>
+        </div>
+    </div>
+
+    <div class="disclaimer-box">
+        This signal engine operates using advanced multi-indicator real market analysis, price action strategy, RSI confluence, and volume dynamics to deliver maximum precision.
+    </div>
+</div>
+
+<script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+<script>
+    function loadTradingViewChart(symbol) {
+        new TradingView.widget({
+            "autosize": true,
+            "symbol": symbol,
+            "interval": "1",
+            "timezone": "Etc/UTC",
+            "theme": "dark",
+            "style": "1",
+            "locale": "en",
+            "enable_publishing": false,
+            "hide_top_toolbar": false,
+            "container_id": "tradingview_widget"
+        });
+    }
+
+    loadTradingViewChart("FX:GBPUSD");
+
+    function updateMarketView() {
+        const pairSelect = document.getElementById("marketPair");
+        const selectedValue = pairSelect.value;
+        const chartWrapper = document.getElementById("chartWrapper");
+        const otcNotice = document.getElementById("otcNotice");
+        const pairTitle = document.getElementById("pairTitle");
+
+        pairTitle.innerText = pairSelect.options[pairSelect.selectedIndex].text;
+
+        if (selectedValue.startsWith("OTC_")) {
+            chartWrapper.style.display = "none";
+            otcNotice.style.display = "flex";
+        } else {
+            chartWrapper.style.display = "block";
+            otcNotice.style.display = "none";
+            loadTradingViewChart("FX:" + selectedValue);
         }
+    }
 
-        // Timer Loop
-        setInterval(() => {
-            candleTime = candleTime <= 1 ? 60 : candleTime - 1;
-            document.getElementById('candleTimer').innerText = candleTime;
-        }, 1000);
+    let count = 3;
+    setInterval(() => {
+        count--;
+        if (count < 0) count = 59;
+        document.getElementById("timer").innerText = (count < 10 ? "0" : "") + count + "s";
+    }, 1000);
+</script>
 
-        // Bangla Voice Alert
-        function speakBangla(text) {
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel();
-                const utterance = new SpeechSynthesisUtterance(text);
-                utterance.lang = 'bn-BD';
-                utterance.rate = 0.95;
-                window.speechSynthesis.speak(utterance);
-            }
-        }
-
-        // Scan Handler
-        async function handleScan() {
-            const btn = document.getElementById('scanBtn');
-            const btnText = document.getElementById('scanBtnText');
-            btn.disabled = true;
-            btnText.innerText = "SCANNING MARKET...";
-
-            setTimeout(async () => {
-                try {
-                    const pair = document.getElementById('pairSelect').value;
-                    const tf = document.getElementById('tfSelect').value;
-
-                    const response = await fetch('/api/scan', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ pair: pair, timeframe: tf, candle_time: candleTime })
-                    });
-
-                    const data = await response.json();
-
-                    document.getElementById('winRate').innerText = data.win_rate;
-                    document.getElementById('accuracy').innerText = data.accuracy;
-                    document.getElementById('confirmRate').innerText = data.confirm_rate;
-                    document.getElementById('engineLog').innerText = data.engine_log;
-
-                    const predBox = document.getElementById('predictionBox');
-                    document.getElementById('predTitle').innerText = data.signal_title;
-                    document.getElementById('predText').innerText = data.action_text;
-                    predBox.classList.remove('hidden');
-
-                    // Voice Output Playback
-                    speakBangla(data.voice_text);
-
-                } catch (e) {
-                    console.error(e);
-                } finally {
-                    btn.disabled = false;
-                    btnText.innerText = "SCAN & PREDICT";
-                }
-            }, 3000);
-        }
-
-        // Initialize Chart on Page Load
-        window.onload = updateChart;
-    </script>
 </body>
 </html>
 """
 
 @app.route('/')
-def index():
+def home():
     return render_template_string(HTML_TEMPLATE)
 
 if __name__ == '__main__':
