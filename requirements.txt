@@ -1,5 +1,5 @@
-Flask
-pandas
-numpy
+flask
+flask-cors
 gunicorn
-requests
+numpy
+pandas
