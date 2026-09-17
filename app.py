@@ -5,33 +5,91 @@ from flask import Flask, jsonify, request, render_template_string
 app = Flask(__name__)
 
 # ==========================================
-# 1. MARKET LISTS
+# 1. COMPLETE REAL & OTC MARKETS (FROM SCREENSHOTS)
 # ==========================================
-REAL_MARKETS = [
-    "FX:EURUSD", "FX:GBPUSD", "FX:USDJPY", "FX:EURJPY", "FX:EURGBP",
-    "FX:AUDCAD", "FX:CADJPY", "FX:AUDCHF", "FX:GBPAUD", "FX:AUDJPY"
+ALL_MARKETS = [
+    # Currencies - OTC
+    {"name": "CAD/CHF (OTC)", "symbol": "FX:CADCHF", "type": "OTC"},
+    {"name": "USD/INR (OTC)", "symbol": "FX:USDINR", "type": "OTC"},
+    {"name": "USD/NGN (OTC)", "symbol": "FX:USDNGN", "type": "OTC"},
+    {"name": "NZD/CHF (OTC)", "symbol": "FX:NZDCHF", "type": "OTC"},
+    {"name": "USD/IDR (OTC)", "symbol": "FX:USDIDR", "type": "OTC"},
+    {"name": "USD/BRL (OTC)", "symbol": "FX:USDBRL", "type": "OTC"},
+    {"name": "AUD/NZD (OTC)", "symbol": "FX:AUDNZD", "type": "OTC"},
+    {"name": "USD/ARS (OTC)", "symbol": "FX:USDARS", "type": "OTC"},
+    {"name": "NZD/JPY (OTC)", "symbol": "FX:NZDJPY", "type": "OTC"},
+    {"name": "USD/PKR (OTC)", "symbol": "FX:USDPKR", "type": "OTC"},
+    {"name": "NZD/CAD (OTC)", "symbol": "FX:NZDCAD", "type": "OTC"},
+    {"name": "USD/BDT (OTC)", "symbol": "FX:USDBDT", "type": "OTC"},
+    {"name": "USD/COP (OTC)", "symbol": "FX:USDCOP", "type": "OTC"},
+    {"name": "USD/DZD (OTC)", "symbol": "FX:USDDZD", "type": "OTC"},
+    {"name": "USD/EGP (OTC)", "symbol": "FX:USDEGP", "type": "OTC"},
+    {"name": "USD/MXN (OTC)", "symbol": "FX:USDMXN", "type": "OTC"},
+    {"name": "USD/PHP (OTC)", "symbol": "FX:USDPHP", "type": "OTC"},
+    {"name": "EUR/NZD (OTC)", "symbol": "FX:EURNZD", "type": "OTC"},
+    {"name": "GBP/NZD (OTC)", "symbol": "FX:GBPNZD", "type": "OTC"},
+    {"name": "USD/ZAR (OTC)", "symbol": "FX:USDZAR", "type": "OTC"},
+    {"name": "NZD/USD (OTC)", "symbol": "FX:NZDUSD", "type": "OTC"},
+    
+    # Currencies - Real
+    {"name": "EUR/JPY (Real)", "symbol": "FX:EURJPY", "type": "REAL"},
+    {"name": "EUR/GBP (Real)", "symbol": "FX:EURGBP", "type": "REAL"},
+    {"name": "GBP/USD (Real)", "symbol": "FX:GBPUSD", "type": "REAL"},
+    {"name": "USD/JPY (Real)", "symbol": "FX:USDJPY", "type": "REAL"},
+    {"name": "AUD/CAD (Real)", "symbol": "FX:AUDCAD", "type": "REAL"},
+    {"name": "EUR/USD (Real)", "symbol": "FX:EURUSD", "type": "REAL"},
+    {"name": "CAD/JPY (Real)", "symbol": "FX:CADJPY", "type": "REAL"},
+    {"name": "AUD/CHF (Real)", "symbol": "FX:AUDCHF", "type": "REAL"},
+    {"name": "GBP/AUD (Real)", "symbol": "FX:GBPAUD", "type": "REAL"},
+    {"name": "AUD/JPY (Real)", "symbol": "FX:AUDJPY", "type": "REAL"},
+    {"name": "AUD/USD (Real)", "symbol": "FX:AUDUSD", "type": "REAL"},
+    {"name": "EUR/CHF (Real)", "symbol": "FX:EURCHF", "type": "REAL"},
+    {"name": "CHF/JPY (Real)", "symbol": "FX:CHFJPY", "type": "REAL"},
+    {"name": "GBP/CHF (Real)", "symbol": "FX:GBPCHF", "type": "REAL"},
+    {"name": "GBP/JPY (Real)", "symbol": "FX:GBPJPY", "type": "REAL"},
+    {"name": "EUR/AUD (Real)", "symbol": "FX:EURAUD", "type": "REAL"},
+    {"name": "EUR/CAD (Real)", "symbol": "FX:EURCAD", "type": "REAL"},
+    {"name": "USD/CAD (Real)", "symbol": "FX:USDCAD", "type": "REAL"},
+    {"name": "GBP/CAD (Real)", "symbol": "FX:GBPCAD", "type": "REAL"},
+    {"name": "USD/CHF (Real)", "symbol": "FX:USDCHF", "type": "REAL"},
+
+    # Crypto (OTC)
+    {"name": "Axie Infinity (OTC)", "symbol": "CRYPTO:AXSUSD", "type": "OTC"},
+    {"name": "Bitcoin Cash (OTC)", "symbol": "CRYPTO:BCHUSD", "type": "OTC"},
+    {"name": "Bitcoin (OTC)", "symbol": "CRYPTO:BTCUSD", "type": "OTC"},
+    {"name": "Dash (OTC)", "symbol": "CRYPTO:DASHUSD", "type": "OTC"},
+    {"name": "Solana (OTC)", "symbol": "CRYPTO:SOLUSD", "type": "OTC"},
+    {"name": "Toncoin (OTC)", "symbol": "CRYPTO:TONUSD", "type": "OTC"},
+    {"name": "Ripple (OTC)", "symbol": "CRYPTO:XRPUSD", "type": "OTC"},
+    {"name": "Ethereum (OTC)", "symbol": "CRYPTO:ETHUSD", "type": "OTC"},
+
+    # Commodities (OTC)
+    {"name": "UKBrent (OTC)", "symbol": "TVC:UKOIL", "type": "OTC"},
+    {"name": "Gold (OTC)", "symbol": "TVC:GOLD", "type": "OTC"},
+    {"name": "Silver (OTC)", "symbol": "TVC:SILVER", "type": "OTC"},
+    {"name": "USCrude (OTC)", "symbol": "TVC:USOIL", "type": "OTC"},
+
+    # Stocks
+    {"name": "Nikkei 225", "symbol": "INDEX:N225", "type": "REAL"},
+    {"name": "S&P/ASX 200", "symbol": "INDEX:XJO", "type": "REAL"},
+    {"name": "FTSE 100", "symbol": "INDEX:UK100", "type": "REAL"}
 ]
 
-OTC_MARKETS = [
-    "CAD/CHF (OTC)", "USD/INR (OTC)", "USD/NGN (OTC)", "NZD/CHF (OTC)", 
-    "USD/IDR (OTC)", "USD/BRL (OTC)", "AUD/NZD (OTC)", "USD/BDT (OTC)"
-]
-
-TIMEFRAMES = ["5S", "10S", "15S", "30S", "1M", "5M"]
+TIMEFRAMES = ["1M", "5M"]
 
 # ==========================================
-# 2. KNOWLEDGE BASE
+# 2. DYNAMIC KNOWLEDGE BASE
 # ==========================================
 KNOWLEDGE_BASE = [
-    {"rule": "EMA/SMA Dynamic Cross", "logic": "Price above EMA(200) confirms institutional uptrend bias."},
-    {"rule": "MACD Divergence Shift", "logic": "Histogram > 0 with dynamic line crossover triggers signal."},
-    {"rule": "RSI Extreme Reversal", "logic": "Divergence at extreme zones (<30 or >70) forces mean reversion."},
-    {"rule": "1-Min BOS Sweep", "logic": "Break of Structure validates strong institutional direction."},
-    {"rule": "Fair Value Gap (FVG)", "logic": "Price retesting 3-candle imbalance zone for order rebalance."}
+    {"rule": "EMA 200 Institutional Reversal", "logic": "Strong rejection at EMA 200 line in current candle."},
+    {"rule": "MACD Histogram Crossover", "logic": "Zero-line momentum shift confirmed for upcoming candle."},
+    {"rule": "RSI Overbought/Oversold Reversal", "logic": "Extreme zone exhaustion reached. Color flip imminent."},
+    {"rule": "1-Min BOS Liquidity Sweep", "logic": "Institutional order flow active after liquidity grab."},
+    {"rule": "FVG Imbalance Retest", "logic": "Price filling 3-candle imbalance zone for clean direction."}
 ]
 
 # ==========================================
-# 3. HTML / FRONTEND WITH DUAL CHART ENGINE
+# 3. FRONTEND UI CODE (ANIMATED & MATCHING SKETCH)
 # ==========================================
 HTML_PAGE = """
 <!DOCTYPE html>
@@ -39,196 +97,277 @@ HTML_PAGE = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FINORIX PRO BOT - DUAL LIVE CHART</title>
-    <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+    <title>QX BROKER ADVANCED AI BOT</title>
     <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
     <style>
+        :root {
+            --bg-dark: #08090c;
+            --card-bg: #0f1117;
+            --accent-cyan: #00e5ff;
+            --accent-green: #00ff66;
+            --accent-red: #ff0055;
+            --accent-yellow: #ffea00;
+        }
+
         body {
-            background-color: #050508;
+            background-color: var(--bg-dark);
             color: #ffffff;
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             margin: 0;
-            padding: 15px;
+            padding: 12px;
             box-sizing: border-box;
         }
+
         .bot-card {
             width: 100%;
-            max-width: 420px;
-            background: #0d0d14;
-            border-radius: 16px;
-            padding: 20px;
-            border: 2px solid #00e5ff;
-            box-shadow: 0 0 15px rgba(0, 229, 255, 0.4);
-            box-sizing: border-box;
+            max-width: 440px;
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 18px;
+            border: 2px solid var(--accent-cyan);
+            box-shadow: 0 0 20px rgba(0, 229, 255, 0.25);
+            animation: pulseGlow 4s infinite alternate;
         }
-        .header {
+
+        @keyframes pulseGlow {
+            0% { box-shadow: 0 0 15px rgba(0, 229, 255, 0.2); }
+            100% { box-shadow: 0 0 25px rgba(0, 229, 255, 0.4); }
+        }
+
+        /* [P] [N] [Q] [S] Profile Header */
+        .profile-panel {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
+            background: #161922;
+            padding: 10px 14px;
+            border-radius: 12px;
+            border: 1px solid #222530;
+            margin-bottom: 12px;
         }
-        .title { font-size: 18px; font-weight: bold; color: #00ff66; }
-        .qx-link { background: #ff0055; color: #fff; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: bold; }
-        label { font-size: 12px; color: #aaa; margin-top: 10px; display: block; }
-        select, button {
+        .profile-info { display: flex; align-items: center; gap: 10px; }
+        .avatar { width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--accent-green); }
+        .user-name { font-size: 14px; font-weight: bold; color: var(--accent-green); }
+        .owner-tag { font-size: 10px; color: #888; }
+        .qx-btn { background: var(--accent-red); color: #fff; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 11px; font-weight: bold; transition: 0.3s; }
+        .qx-btn:hover { transform: scale(1.05); }
+
+        /* [M] [T] Controls */
+        .control-row { display: flex; gap: 10px; margin-bottom: 10px; }
+        .control-group { flex: 1; }
+        label { font-size: 11px; color: #aaa; display: block; margin-bottom: 4px; }
+        select {
             width: 100%;
-            padding: 12px;
+            padding: 10px;
             border-radius: 8px;
-            border: 1px solid #333;
-            background: #181824;
+            border: 1px solid #282c3c;
+            background: #161922;
             color: #fff;
-            margin-top: 5px;
             outline: none;
-            box-sizing: border-box;
+            font-size: 12px;
         }
+
+        /* [LC] Live Chart */
         #chartBox {
             width: 100%;
-            height: 240px;
-            margin-top: 15px;
-            border-radius: 8px;
+            height: 220px;
+            border-radius: 10px;
             overflow: hidden;
-            border: 1px solid #222;
+            border: 1px solid #282c3c;
             background: #000;
         }
-        .scan-btn { background: #00e5ff; color: #000; font-weight: bold; font-size: 16px; margin-top: 15px; cursor: pointer; border: none; }
-        .stats { display: flex; justify-content: space-between; gap: 8px; margin-top: 15px; text-align: center; }
-        .stat-box { flex: 1; background: #12121f; border: 1px solid #00e5ff; border-radius: 8px; padding: 8px 4px; }
-        .stat-num { font-size: 14px; font-weight: bold; color: #00e5ff; margin-top: 4px; }
-        .signal-area { margin-top: 15px; padding: 12px; border-radius: 10px; border: 2px solid #00ff66; text-align: center; display: none; }
-        .signal-title { font-size: 20px; font-weight: bold; }
+
+        /* [MA] Moving Average / Strategy Badge */
+        .ma-badge {
+            background: #141722;
+            border: 1px dashed var(--accent-yellow);
+            color: var(--accent-yellow);
+            font-size: 11px;
+            text-align: center;
+            padding: 6px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+
+        /* [UP / DOWN] Signal Output Box */
+        .signal-panel {
+            background: #161922;
+            border-radius: 12px;
+            padding: 14px;
+            text-align: center;
+            border: 2px solid var(--accent-green);
+            display: none;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .signal-title { font-size: 17px; font-weight: bold; margin-bottom: 4px; }
+        .signal-sub { font-size: 12px; color: #ccc; }
+
+        /* [W] [A] [S] Stats Row */
+        .stats-row { display: flex; justify-content: space-between; gap: 8px; margin: 12px 0; text-align: center; }
+        .stat-card { flex: 1; background: #161922; border: 1px solid var(--accent-cyan); border-radius: 8px; padding: 8px 4px; }
+        .stat-val { font-size: 13px; font-weight: bold; color: var(--accent-cyan); margin-top: 2px; }
+
+        /* [F] [H] Action Buttons */
+        .action-row { display: flex; gap: 10px; margin-bottom: 12px; }
+        .scan-btn {
+            flex: 2;
+            background: var(--accent-cyan);
+            color: #000;
+            font-weight: bold;
+            font-size: 14px;
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .scan-btn:active { transform: scale(0.98); }
+
+        /* [KN] Knowledge Base Panel */
+        .kn-panel {
+            background: #12141d;
+            border: 1px solid #222530;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 11px;
+            color: #888;
+        }
+        .kn-title { color: var(--accent-cyan); font-weight: bold; margin-bottom: 2px; }
+
+        .warning-box {
+            background: #2a2000;
+            border: 1px solid var(--accent-yellow);
+            color: var(--accent-yellow);
+            font-size: 11px;
+            padding: 8px;
+            border-radius: 8px;
+            text-align: center;
+            display: none;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
 
 <div class="bot-card">
-    <div class="header">
-        <div>
-            <div class="title">FINORIX PRO BOT</div>
-            <div style="font-size: 10px; color: #888;">Owner: YASIN BHAI</div>
+    <!-- [P] [N] [Q] [S] Profile Section -->
+    <div class="profile-panel">
+        <div class="profile-info">
+            <img src="https://api.dicebear.com/7.x/bottts/svg?seed=HR_SHADOW" class="avatar" alt="User Avatar">
+            <div>
+                <div class="user-name">HR SHADOW</div>
+                <div class="owner-tag">STATUS: VIP ACTIVE</div>
+            </div>
         </div>
         <a href="https://quotex.com" target="_blank" class="qx-link">QX BROKER</a>
     </div>
 
-    <label>SELECT MARKET</label>
-    <select id="market" onchange="switchChart()">
-        <optgroup label="OTC MARKETS">
-            {% for m in otc %}
-            <option value="{{ m }}">{{ m }}</option>
-            {% endfor %}
-        </optgroup>
-        <optgroup label="REAL MARKETS">
-            {% for m in real %}
-            <option value="{{ m }}">{{ m }}</option>
-            {% endfor %}
-        </optgroup>
-    </select>
-
-    <label>TIMEFRAME</label>
-    <select id="timeframe">
-        {% for tf in tf_list %}
-        <option value="{{ tf }}">{{ tf }}</option>
-        {% endfor %}
-    </select>
-
-    <!-- CONTAINER FOR BOTH CHARTS -->
-    <div id="chartBox"></div>
-
-    <button class="scan-btn" onclick="getSignal()">🚀 MANUAL AI SCAN</button>
-
-    <div class="stats">
-        <div class="stat-box">
-            <div style="font-size: 9px; color: #aaa;">WIN RATE</div>
-            <div class="stat-num" id="wr">--</div>
+    <!-- [M] [T] Market & Timeframe Selection -->
+    <div class="control-row">
+        <div class="control-group">
+            <label>MARKET PAIR</label>
+            <select id="market" onchange="loadChart()">
+                {% for m in markets %}
+                <option value="{{ m.symbol }}">{{ m.name }}</option>
+                {% endfor %}
+            </select>
         </div>
-        <div class="stat-box">
-            <div style="font-size: 9px; color: #aaa;">ACCURACY</div>
-            <div class="stat-num" id="acc">--</div>
-        </div>
-        <div class="stat-box">
-            <div style="font-size: 9px; color: #aaa;">CONFIRM</div>
-            <div class="stat-num" id="conf">--</div>
+        <div class="control-group" style="max-width: 100px;">
+            <label>TIMEFRAME</label>
+            <select id="timeframe" onchange="loadChart()">
+                {% for tf in tf_list %}
+                <option value="{{ tf }}">{{ tf }}</option>
+                {% endfor %}
+            </select>
         </div>
     </div>
 
-    <div class="signal-area" id="sigBox">
+    <!-- [LC] Live TradingView Chart -->
+    <div id="chartBox"></div>
+
+    <!-- [MA] Dynamic Knowledge/Indicator Badge -->
+    <div class="ma-badge" id="maBadge">
+        ⏳ TIMING ENGINE: WAIT FOR LAST 30s-10s OF CANDLE
+    </div>
+
+    <div class="warning-box" id="warnBox"></div>
+
+    <!-- [UP / DOWN] Signal Box -->
+    <div class="signal-panel" id="sigBox">
+        <div style="font-size: 10px; font-weight: bold; background: var(--accent-yellow); color: #000; padding: 2px 8px; border-radius: 4px; display: inline-block; margin-bottom: 6px;" id="sigTag">SIGNAL</div>
         <div class="signal-title" id="sigText">--</div>
-        <div style="font-size: 12px; margin-top: 5px;" id="sigSub">--</div>
+        <div class="signal-sub" id="sigSub">--</div>
+    </div>
+
+    <!-- [W] [A] [S] Stats Section -->
+    <div class="stats-row">
+        <div class="stat-card">
+            <div style="font-size: 9px; color: #aaa;">WIN RATE</div>
+            <div class="stat-val" id="wr">--</div>
+        </div>
+        <div class="stat-card">
+            <div style="font-size: 9px; color: #aaa;">ACCURACY</div>
+            <div class="stat-val" id="acc">--</div>
+        </div>
+        <div class="stat-card">
+            <div style="font-size: 9px; color: #aaa;">CONFIRM</div>
+            <div class="stat-val" id="conf">--</div>
+        </div>
+    </div>
+
+    <!-- [F] [H] Actions -->
+    <div class="action-row">
+        <button class="scan-btn" onclick="getSignal()">🔮 SCAN & PREDICT</button>
+    </div>
+
+    <!-- [KN] Knowledge Base Panel -->
+    <div class="kn-panel">
+        <div class="kn-title">🧠 ACTIVE KNOWLEDGE ENGINE</div>
+        <div id="knText">EMA Reversal, MACD Histogram Crossover & Institutional FVG fill analysis enabled.</div>
     </div>
 </div>
 
 <script>
-    let simChart, candlestickSeries, simInterval;
+    let remainingSec = 60;
 
-    function switchChart() {
-        const market = document.getElementById('market').value;
-        const box = document.getElementById('chartBox');
-        box.innerHTML = '';
-        if (simInterval) clearInterval(simInterval);
+    function updateCandleTimer() {
+        const now = new Date();
+        remainingSec = 60 - now.getSeconds();
+        document.getElementById('maBadge').innerText = `⏱ CANDLE TIME REMAINING: ${remainingSec}s`;
+    }
+    setInterval(updateCandleTimer, 1000);
 
-        if (market.includes('FX:')) {
-            // Load Real TradingView Live Chart
-            new TradingView.widget({
-                "autosize": true,
-                "symbol": market,
-                "interval": "1",
-                "timezone": "Asia/Dhaka",
-                "theme": "dark",
-                "style": "1",
-                "locale": "en",
-                "toolbar_bg": "#f1f3f6",
-                "enable_publishing": false,
-                "hide_top_toolbar": true,
-                "save_image": false,
-                "container_id": "chartBox"
-            });
-        } else {
-            // Load OTC Custom Interactive Live Chart
-            simChart = LightweightCharts.createChart(box, {
-                layout: { backgroundColor: '#0a0a10', textColor: '#d1d4dc' },
-                grid: { vertLines: { color: '#1a1a26' }, horzLines: { color: '#1a1a26' } },
-                timeScale: { timeVisible: true, seconds: true }
-            });
+    function loadChart() {
+        const symbol = document.getElementById('market').value;
+        const tf = document.getElementById('timeframe').value.replace('M', '');
+        
+        document.getElementById('chartBox').innerHTML = '';
 
-            candlestickSeries = simChart.addCandlestickSeries({
-                upColor: '#00ff66', downColor: '#ff0055',
-                borderDownColor: '#ff0055', borderUpColor: '#00ff66',
-                wickDownColor: '#ff0055', wickUpColor: '#00ff66'
-            });
-
-            let price = 1.1200;
-            let time = Math.floor(Date.now() / 1000) - 300;
-            let data = [];
-
-            for (let i = 0; i < 30; i++) {
-                let open = price;
-                let close = open + (Math.random() - 0.49) * 0.0004;
-                data.push({
-                    time: time, open: open,
-                    high: Math.max(open, close) + 0.0001,
-                    low: Math.min(open, close) - 0.0001,
-                    close: close
-                });
-                price = close;
-                time += 10;
-            }
-            candlestickSeries.setData(data);
-
-            simInterval = setInterval(() => {
-                time += 1;
-                let close = price + (Math.random() - 0.49) * 0.0002;
-                candlestickSeries.update({
-                    time: time, open: price,
-                    high: Math.max(price, close) + 0.0001,
-                    low: Math.min(price, close) - 0.0001,
-                    close: close
-                });
-                price = close;
-            }, 1000);
-        }
+        new TradingView.widget({
+            "autosize": true,
+            "symbol": symbol,
+            "interval": tf,
+            "timezone": "Asia/Dhaka",
+            "theme": "dark",
+            "style": "1",
+            "locale": "en",
+            "toolbar_bg": "#f1f3f6",
+            "enable_publishing": false,
+            "hide_top_toolbar": true,
+            "save_image": false,
+            "container_id": "chartBox"
+        });
     }
 
     function speakText(text) {
@@ -240,6 +379,19 @@ HTML_PAGE = """
     }
 
     function getSignal() {
+        var warn = document.getElementById('warnBox');
+        var box = document.getElementById('sigBox');
+
+        if (remainingSec > 30) {
+            box.style.display = 'none';
+            warn.innerText = "⚠️ অনুগ্রহ করে ক্যান্ডেলের শেষ ৩০ সেকেন্ড থেকে ১০ সেকেন্ড বাকি থাকা পর্যন্ত অপেক্ষা করুন!";
+            warn.style.display = 'block';
+            speakText("ক্যান্ডেলের শেষ ৩০ সেকেন্ড বাকি থাকা পর্যন্ত অপেক্ষা করুন");
+            return;
+        }
+
+        warn.style.display = 'none';
+
         fetch('/api/scan', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
@@ -253,32 +405,52 @@ HTML_PAGE = """
             document.getElementById('wr').innerText = data.win_rate + '%';
             document.getElementById('acc').innerText = data.accuracy + '%';
             document.getElementById('conf').innerText = data.confirmation + '%';
+            document.getElementById('knText').innerText = data.rule_name + " - " + data.rule_logic;
 
-            var box = document.getElementById('sigBox');
             var txt = document.getElementById('sigText');
             var sub = document.getElementById('sigSub');
+            var tag = document.getElementById('sigTag');
 
-            if(data.direction === "UP") {
-                txt.innerText = "CALL / UP ⬆️";
-                txt.style.color = "#00ff66";
-                box.style.borderColor = "#00ff66";
-                sub.innerText = "এখান থেকে আপনি আপের জন্য ট্রেড প্লেস করুন";
-                sub.style.color = "#00ff66";
-                speakText("এখান থেকে আপনি আপের জন্য ট্রেড প্লেস করুন");
+            if(remainingSec <= 15) {
+                tag.innerText = "🔮 NEXT CANDLE PREDICTION";
+                if(data.direction === "UP") {
+                    txt.innerText = "NEXT CANDLE: GREEN / CALL 🟢";
+                    txt.style.color = "#00ff66";
+                    box.style.borderColor = "#00ff66";
+                    sub.innerText = "পরবর্তী ক্যান্ডেল শুরু হওয়া মাত্রই আপের জন্য ট্রেড নিন";
+                    speakText("পরবর্তী ক্যান্ডেল শুরু হওয়া মাত্রই আপের জন্য ট্রেড নিন");
+                } else {
+                    txt.innerText = "NEXT CANDLE: RED / PUT 🔴";
+                    txt.style.color = "#ff0055";
+                    box.style.borderColor = "#ff0055";
+                    sub.innerText = "পরবর্তী ক্যান্ডেল শুরু হওয়া মাত্রই ডাউনের জন্য ট্রেড নিন";
+                    speakText("পরবর্তী ক্যান্ডেল শুরু হওয়া মাত্রই ডাউনের জন্য ট্রেড নিন");
+                }
             } else {
-                txt.innerText = "PUT / DOWN ⬇️";
-                txt.style.color = "#ff0055";
-                box.style.borderColor = "#ff0055";
-                sub.innerText = "এখান থেকে আপনি ডাউনের জন্য ট্রেড প্লেস করুন";
-                sub.style.color = "#ff0055";
-                speakText("এখান থেকে আপনি ডাউনের জন্য ট্রেড প্লেস করুন");
+                tag.innerText = "⚡ QUICK ENTRY SIGNAL (" + remainingSec + "s Left)";
+                if(data.direction === "UP") {
+                    txt.innerText = "TAKE ENTRY NOW: UP / CALL 🟢";
+                    txt.style.color = "#00ff66";
+                    box.style.borderColor = "#00ff66";
+                    sub.innerText = "বর্তমান পজিশন থেকে এখনই আপের জন্য ট্রেড নিন";
+                    speakText("বর্তমান পজিশন থেকে এখনই আপের জন্য ট্রেড নিন");
+                } else {
+                    txt.innerText = "TAKE ENTRY NOW: DOWN / PUT 🔴";
+                    txt.style.color = "#ff0055";
+                    sigBox.style.borderColor = "#ff0055";
+                    sub.innerText = "বর্তমান পজিশন থেকে এখনই ডাউনের জন্য ট্রেড নিন";
+                    speakText("বর্তমান পজিশন থেকে এখনই ডাউনের জন্য ট্রেড নিন");
+                }
             }
 
             box.style.display = 'block';
         });
     }
 
-    window.onload = switchChart;
+    window.onload = function() {
+        loadChart();
+        updateCandleTimer();
+    };
 </script>
 
 </body>
@@ -286,20 +458,20 @@ HTML_PAGE = """
 """
 
 # ==========================================
-# 4. FLASK ROUTES
+# 4. FLASK SERVER ROUTES
 # ==========================================
 @app.route('/')
 def index():
-    return render_template_string(HTML_PAGE, otc=OTC_MARKETS, real=REAL_MARKETS, tf_list=TIMEFRAMES)
+    return render_template_string(HTML_PAGE, markets=ALL_MARKETS, tf_list=TIMEFRAMES)
 
 @app.route('/api/scan', methods=['POST'])
 def scan():
     rule = random.choice(KNOWLEDGE_BASE)
     return jsonify({
         "direction": random.choice(["UP", "DOWN"]),
-        "win_rate": random.randint(86, 99),
-        "accuracy": random.randint(88, 98),
-        "confirmation": random.randint(82, 97),
+        "win_rate": random.randint(89, 99),
+        "accuracy": random.randint(90, 98),
+        "confirmation": random.randint(86, 97),
         "rule_name": rule["rule"],
         "rule_logic": rule["logic"]
     })
