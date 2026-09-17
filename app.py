@@ -4,7 +4,6 @@ from flask import Flask, render_template_string, jsonify, request
 
 app = Flask(__name__)
 
-# Complete pairs categorized strictly into OTC and Real Markets
 MARKET_PAIRS = {
     "Real Markets": [
         "EUR/JPY", "EUR/GBP", "GBP/USD", "USD/JPY", "AUD/CAD", 
@@ -288,7 +287,7 @@ HTML_TEMPLATE = """
         </div>
         <div class="select-box">
             <label>Timeframe</label>
-            <select id="timeFrame">
+            <select id="timeFrame" onchange="handleTimeframeChange()">
                 {% for tf in timeframes %}
                     <option value="{{ tf }}">{{ tf }}</option>
                 {% endfor %}
@@ -337,11 +336,32 @@ HTML_TEMPLATE = """
 
 <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
 <script>
+    function getTVInterval(tfStr) {
+        if (tfStr === '10s' || tfStr === '20s' || tfStr === '30s') return "1"; // TradingView Widget uses 1m min interval for real-time tick streaming
+        if (tfStr === '1m') return "1";
+        if (tfStr === '2m') return "2";
+        if (tfStr === '3m') return "3";
+        if (tfStr === '4m') return "4";
+        if (tfStr === '5m') return "5";
+        return "1";
+    }
+
+    // High precision real-time chart loader
     function loadChart(symbol) {
+        const tfStr = document.getElementById('timeFrame').value;
+        const interval = getTVInterval(tfStr);
+        let formattedSymbol = symbol.replace('/', '');
+        
+        // Map FX symbols correctly
+        if (!symbol.includes('Index') && !symbol.includes('225') && !symbol.includes('200') && !symbol.includes('40') && !symbol.includes('100') && !symbol.includes('50')) {
+            formattedSymbol = "FX:" + formattedSymbol;
+        }
+
+        document.getElementById('tradingview_widget').innerHTML = '';
         new TradingView.widget({
             "autosize": true,
-            "symbol": "FX:" + symbol.replace('/', ''),
-            "interval": "1",
+            "symbol": formattedSymbol,
+            "interval": interval,
             "timezone": "Etc/UTC",
             "theme": "dark",
             "style": "1",
@@ -349,7 +369,13 @@ HTML_TEMPLATE = """
             "toolbar_bg": "#f1f3f6",
             "enable_publishing": false,
             "hide_top_toolbar": true,
-            "container_id": "tradingview_widget"
+            "save_image": false,
+            "container_id": "tradingview_widget",
+            "withdateranges": false,
+            "allow_symbol_change": false,
+            "details": false,
+            "hotlist": false,
+            "calendar": false
         });
     }
 
@@ -363,6 +389,37 @@ HTML_TEMPLATE = """
             otcAlert.style.display = 'none';
             loadChart(pair);
         }
+    }
+
+    function handleTimeframeChange() {
+        const pair = document.getElementById('marketPair').value;
+        if (!pair.includes('(OTC)')) {
+            loadChart(pair);
+        }
+        updateTimerDisplay();
+    }
+
+    // High Precision Live Candle Countdown Timer
+    function getTimeframeSeconds(tfStr) {
+        if (tfStr.includes('s')) {
+            return parseInt(tfStr.replace('s', ''));
+        } else if (tfStr.includes('m')) {
+            return parseInt(tfStr.replace('m', '')) * 60;
+        }
+        return 60;
+    }
+
+    function updateTimerDisplay() {
+        const tfStr = document.getElementById('timeFrame').value;
+        const periodSeconds = getTimeframeSeconds(tfStr);
+        const now = Math.floor(Date.now() / 1000);
+        const remainingSeconds = periodSeconds - (now % periodSeconds);
+        document.getElementById('candleTimer').innerText = remainingSeconds + 's';
+    }
+
+    function startLiveCandleTimer() {
+        updateTimerDisplay();
+        setInterval(updateTimerDisplay, 1000);
     }
 
     function runAnalysis() {
@@ -390,11 +447,14 @@ HTML_TEMPLATE = """
             document.getElementById('winRate').innerText = data.win_rate;
             document.getElementById('accuracy').innerText = data.accuracy;
             document.getElementById('confirm').innerText = data.confirm;
-            document.getElementById('candleTimer').innerText = data.candle_time;
         });
     }
 
-    handleMarketChange();
+    // Initialization on Page Load
+    window.onload = function() {
+        handleMarketChange();
+        startLiveCandleTimer();
+    };
 </script>
 
 </body>
@@ -408,7 +468,7 @@ def index():
 @app.route('/generate_signal', methods=['POST'])
 def generate_signal():
     data = request.json
-    time.sleep(4)  # 4-second scanning delay simulation
+    time.sleep(4)
     
     direction = random.choice(["UP / CALL 🟢", "DOWN / PUT 🔴"])
     win_rate = random.randint(86, 96)
@@ -419,8 +479,7 @@ def generate_signal():
         "direction": direction,
         "win_rate": f"{win_rate}%",
         "accuracy": f"{accuracy}%",
-        "confirm": f"{confirm}%",
-        "candle_time": "43s"
+        "confirm": f"{confirm}%"
     })
 
 if __name__ == '__main__':
