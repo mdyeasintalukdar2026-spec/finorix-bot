@@ -138,7 +138,6 @@ HTML_TEMPLATE = """
             font-size: 13px;
         }
 
-        /* চার্টের সাইজ কিছুটা ছোট এবং সুন্দর করার জন্য ১৮৫px সেট করা হয়েছে */
         .chart-box {
             height: 185px;
             background: #000;
@@ -339,7 +338,6 @@ HTML_TEMPLATE = """
 <script>
     let currentRemainingTime = 60;
 
-    // টাইমফ্রেমে মসৃণ ও সঠিক ক্যান্ডেল রেন্ডারিং লজিক
     function getTVInterval(tfStr) {
         if (tfStr === '10s') return "1S";
         if (tfStr === '20s') return "1S";
@@ -373,7 +371,7 @@ HTML_TEMPLATE = """
             "toolbar_bg": "#121824",
             "enable_publishing": false,
             "hide_top_toolbar": false,
-            "hide_legend": false,
+            "hide_legend": true,  /* চার্টের অতিরিক্ত বড় লেখা ও ইনফো হাইড/ক্লিন করার জন্য true দেওয়া হলো */
             "save_image": false,
             "container_id": "tradingview_widget",
             "withdateranges": false,
