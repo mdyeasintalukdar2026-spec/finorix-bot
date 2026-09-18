@@ -139,7 +139,7 @@ HTML_TEMPLATE = """
         }
 
         .chart-box {
-            height: 190px;
+            height: 220px;
             background: #000;
             border-radius: 8px;
             overflow: hidden;
@@ -337,8 +337,7 @@ HTML_TEMPLATE = """
 <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
 <script>
     function getTVInterval(tfStr) {
-        if (tfStr === '10s' || tfStr === '20s' || tfStr === '30s') return "1"; // TradingView Widget uses 1m min interval for real-time tick streaming
-        if (tfStr === '1m') return "1";
+        if (tfStr === '10s' || tfStr === '20s' || tfStr === '30s' || tfStr === '1m') return "1";
         if (tfStr === '2m') return "2";
         if (tfStr === '3m') return "3";
         if (tfStr === '4m') return "4";
@@ -346,13 +345,12 @@ HTML_TEMPLATE = """
         return "1";
     }
 
-    // High precision real-time chart loader
+    // Chart Widget with Enabled Top Toolbar Header Options & Live WebSocket Stream
     function loadChart(symbol) {
         const tfStr = document.getElementById('timeFrame').value;
         const interval = getTVInterval(tfStr);
         let formattedSymbol = symbol.replace('/', '');
         
-        // Map FX symbols correctly
         if (!symbol.includes('Index') && !symbol.includes('225') && !symbol.includes('200') && !symbol.includes('40') && !symbol.includes('100') && !symbol.includes('50')) {
             formattedSymbol = "FX:" + formattedSymbol;
         }
@@ -366,9 +364,10 @@ HTML_TEMPLATE = """
             "theme": "dark",
             "style": "1",
             "locale": "en",
-            "toolbar_bg": "#f1f3f6",
+            "toolbar_bg": "#121824",
             "enable_publishing": false,
-            "hide_top_toolbar": true,
+            "hide_top_toolbar": false,  /* TOP TOOLBAR RESTORED */
+            "hide_legend": false,
             "save_image": false,
             "container_id": "tradingview_widget",
             "withdateranges": false,
@@ -399,7 +398,7 @@ HTML_TEMPLATE = """
         updateTimerDisplay();
     }
 
-    // High Precision Live Candle Countdown Timer
+    // Live Real-Time Candle Countdown Logic
     function getTimeframeSeconds(tfStr) {
         if (tfStr.includes('s')) {
             return parseInt(tfStr.replace('s', ''));
@@ -450,7 +449,6 @@ HTML_TEMPLATE = """
         });
     }
 
-    // Initialization on Page Load
     window.onload = function() {
         handleMarketChange();
         startLiveCandleTimer();
