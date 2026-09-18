@@ -32,11 +32,11 @@ TIMEFRAMES = ["10s", "20s", "30s", "1m", "2m", "3m", "4m", "5m"]
 
 HTML_TEMPLATE = """
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FINRIX PRO BOT</title>
+    <title>FINORIX PRO BOT</title>
     <style>
         :root {
             --bg-color: #0b0e14;
@@ -262,7 +262,7 @@ HTML_TEMPLATE = """
         <div class="bot-title">
             <div class="bot-icon">🤖</div>
             <div>
-                <div style="font-weight: bold; font-size: 15px; color: var(--accent-color);">FINRIX PRO BOT</div>
+                <div style="font-weight: bold; font-size: 15px; color: var(--accent-color);">FINORIX PRO BOT</div>
                 <div style="font-size: 10px; color: var(--text-sub);">BY YASIN BHAI</div>
             </div>
         </div>
@@ -311,7 +311,7 @@ HTML_TEMPLATE = """
     <div class="signal-box">
         <div style="font-size: 10px; color: #a855f7; font-weight: bold;">🔮 SIGNAL GENERATED</div>
         <div id="signalResult" class="signal-text">PRESS SCAN TO START</div>
-        <div id="subText" style="font-size: 10px; color: var(--text-sub); margin-top: 4px;">ম্যানুয়ালি স্ক্যান বাটনে ক্লিক করে ট্রেড অ্যানালাইসিস করুন</div>
+        <div id="subText" style="font-size: 10px; color: var(--text-sub); margin-top: 4px;">Click the SCAN button manually to analyze trade market</div>
     </div>
 
     <div class="stats-grid">
@@ -336,6 +336,8 @@ HTML_TEMPLATE = """
 
 <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
 <script>
+    let currentRemainingTime = 60;
+
     function getTVInterval(tfStr) {
         if (tfStr === '10s' || tfStr === '20s' || tfStr === '30s' || tfStr === '1m') return "1";
         if (tfStr === '2m') return "2";
@@ -345,7 +347,6 @@ HTML_TEMPLATE = """
         return "1";
     }
 
-    // Chart Widget with Enabled Top Toolbar Header Options & Live WebSocket Stream
     function loadChart(symbol) {
         const tfStr = document.getElementById('timeFrame').value;
         const interval = getTVInterval(tfStr);
@@ -366,7 +367,7 @@ HTML_TEMPLATE = """
             "locale": "en",
             "toolbar_bg": "#121824",
             "enable_publishing": false,
-            "hide_top_toolbar": false,  /* TOP TOOLBAR RESTORED */
+            "hide_top_toolbar": false,
             "hide_legend": false,
             "save_image": false,
             "container_id": "tradingview_widget",
@@ -398,7 +399,6 @@ HTML_TEMPLATE = """
         updateTimerDisplay();
     }
 
-    // Live Real-Time Candle Countdown Logic
     function getTimeframeSeconds(tfStr) {
         if (tfStr.includes('s')) {
             return parseInt(tfStr.replace('s', ''));
@@ -412,8 +412,8 @@ HTML_TEMPLATE = """
         const tfStr = document.getElementById('timeFrame').value;
         const periodSeconds = getTimeframeSeconds(tfStr);
         const now = Math.floor(Date.now() / 1000);
-        const remainingSeconds = periodSeconds - (now % periodSeconds);
-        document.getElementById('candleTimer').innerText = remainingSeconds + 's';
+        currentRemainingTime = periodSeconds - (now % periodSeconds);
+        document.getElementById('candleTimer').innerText = currentRemainingTime + 's';
     }
 
     function startLiveCandleTimer() {
@@ -428,7 +428,7 @@ HTML_TEMPLATE = """
         const subText = document.getElementById('subText');
         
         signalDiv.innerHTML = '<span class="scanning-loader">🌀</span> SCANNING MARKET...';
-        subText.innerText = 'মার্কেট ডাটা এবং টেকনিক্যাল ইন্ডিকেটর অ্যানালাইসিস করা হচ্ছে...';
+        subText.innerText = 'Analyzing market data and technical indicators...';
         
         document.getElementById('winRate').innerText = '--%';
         document.getElementById('accuracy').innerText = '--%';
@@ -437,12 +437,12 @@ HTML_TEMPLATE = """
         fetch('/generate_signal', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ pair: pair, timeframe: tf })
+            body: JSON.stringify({ pair: pair, timeframe: tf, remaining_time: currentRemainingTime })
         })
         .then(response => response.json())
         .then(data => {
-            signalDiv.innerHTML = `TAKE ENTRY NOW: ${data.direction}`;
-            subText.innerText = 'এখান থেকে আপনি নির্দ্দিষ্ট ডিরেকশনে ট্রেড প্রেস করুন';
+            signalDiv.innerHTML = data.direction;
+            subText.innerText = data.sub_text;
             document.getElementById('winRate').innerText = data.win_rate;
             document.getElementById('accuracy').innerText = data.accuracy;
             document.getElementById('confirm').innerText = data.confirm;
@@ -466,15 +466,33 @@ def index():
 @app.route('/generate_signal', methods=['POST'])
 def generate_signal():
     data = request.json
+    remaining_time = data.get('remaining_time', 60)
+    
     time.sleep(4)
     
-    direction = random.choice(["UP / CALL 🟢", "DOWN / PUT 🔴"])
+    is_up = random.choice([True, False])
+    
+    # Flexible Timing Logic based on candle remaining time
+    if remaining_time > 15:
+        if is_up:
+            direction_text = "TAKE ENTRY NOW: UP 🟢"
+        else:
+            direction_text = "TAKE ENTRY NOW: DOWN 🔴"
+        sub_text = "Place your trade for UP / DOWN direction from here"
+    else:
+        if is_up:
+            direction_text = "NEXT CANDLE: GREEN 🟢"
+        else:
+            direction_text = "NEXT CANDLE: RED 🔴"
+        sub_text = "Take trade for UP / DOWN in the next candle"
+        
     win_rate = random.randint(86, 96)
     accuracy = random.randint(92, 99)
     confirm = random.randint(89, 97)
     
     return jsonify({
-        "direction": direction,
+        "direction": direction_text,
+        "sub_text": sub_text,
         "win_rate": f"{win_rate}%",
         "accuracy": f"{accuracy}%",
         "confirm": f"{confirm}%"
