@@ -138,8 +138,9 @@ HTML_TEMPLATE = """
             font-size: 13px;
         }
 
+        /* চার্টের সাইজ কিছুটা ছোট এবং সুন্দর করার জন্য ১৮৫px সেট করা হয়েছে */
         .chart-box {
-            height: 220px;
+            height: 185px;
             background: #000;
             border-radius: 8px;
             overflow: hidden;
@@ -338,8 +339,12 @@ HTML_TEMPLATE = """
 <script>
     let currentRemainingTime = 60;
 
+    // টাইমফ্রেমে মসৃণ ও সঠিক ক্যান্ডেল রেন্ডারিং লজিক
     function getTVInterval(tfStr) {
-        if (tfStr === '10s' || tfStr === '20s' || tfStr === '30s' || tfStr === '1m') return "1";
+        if (tfStr === '10s') return "1S";
+        if (tfStr === '20s') return "1S";
+        if (tfStr === '30s') return "1S";
+        if (tfStr === '1m') return "1";
         if (tfStr === '2m') return "2";
         if (tfStr === '3m') return "3";
         if (tfStr === '4m') return "4";
@@ -472,7 +477,6 @@ def generate_signal():
     
     is_up = random.choice([True, False])
     
-    # Flexible Timing Logic based on candle remaining time
     if remaining_time > 15:
         if is_up:
             direction_text = "TAKE ENTRY NOW: UP 🟢"
